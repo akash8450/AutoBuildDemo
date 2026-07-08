@@ -4,24 +4,23 @@ stages:
   - build
 
 variables:
-  ANDROID_SDK_ROOT: "/sdk"
-  JAVA_HOME: "/usr/lib/jvm/java-17-openjdk-amd64"
+  ANDROID_SDK_ROOT: "$CI_PROJECT_DIR/android-sdk"
+  ANDROID_HOME: "$CI_PROJECT_DIR/android-sdk"
 
 before_script:
   - apt-get update
-  - apt-get install -y openjdk-17-jdk wget unzip
+  - apt-get install -y default-jdk wget unzip
 
-  # Install Android SDK
   - mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
-  - wget https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip
-  - unzip -q commandlinetools-linux-13114758_latest.zip -d $ANDROID_SDK_ROOT/cmdline-tools
+  - wget -O tools.zip https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip
+  - unzip -q tools.zip -d $ANDROID_SDK_ROOT/cmdline-tools
   - mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
 
-  - export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin
-  - export PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools
+  - export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH
 
+  - sdkmanager --version
   - yes | sdkmanager --licenses
-  - sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+  - yes | sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
 build_apk:
   stage: build
@@ -32,7 +31,7 @@ build_apk:
     - npx cap sync android
     - cd android
     - chmod +x gradlew
-    - ./gradlew assembleDebug
+    - ./gradlew assembleDebug --no-daemon
 
   artifacts:
     paths:
