@@ -1,0 +1,38 @@
+image: node:22
+
+stages:
+  - build
+
+variables:
+  ANDROID_SDK_ROOT: "/sdk"
+
+before_script:
+  - apt-get update
+  - apt-get install -y openjdk-21-jdk wget unzip
+
+  # Install Android SDK
+  - mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+  - wget https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip
+  - unzip commandlinetools-linux-13114758_latest.zip -d $ANDROID_SDK_ROOT/cmdline-tools
+  - mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
+
+  - export PATH=$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin
+  - export PATH=$PATH:$ANDROID_SDK_ROOT/platform-tools
+
+  - yes | sdkmanager --licenses
+  - sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+build_apk:
+  stage: build
+
+  script:
+    - npm install
+    - npm run build
+    - npx cap sync android
+    - cd android
+    - chmod +x gradlew
+    - ./gradlew assembleDebug
+
+  artifacts:
+    paths:
+      - android/app/build/outputs/apk/debug/app-debug.apk
