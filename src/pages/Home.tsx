@@ -36,7 +36,7 @@ const Home: React.FC = () => {
             <h1>🚀 GitHub Actions APK Build</h1>
 
             <p>
-              This APK was generated automatically after pushing code to GitHub.
+              This APK was generatednfnhn automatically after pushing code to GitHub.
             </p>
 
             <IonButton expand="block">
